@@ -1,0 +1,207 @@
+<?php
+$inputJSON = file_get_contents('php://input');
+$input= json_decode($inputJSON, TRUE ); //convert JSON into array
+require_once "/var/www/indriver/function/db_api.php";
+
+/*
+$input = array(
+"id"=>"start",
+"action"=>"put",
+"user"=>"1234",
+"pass"=>"1234",
+"work_status"=>"1"
+);
+
+*/
+
+if($input['action']=="put")
+{
+	if($input['id']=="reg")
+	{
+		$req = "INSERT INTO taxist (`username`,`priznak`,`phone_taxist`,`number_taxist`,`pass_taxist`) VALUES ('$input[name]','$input[desk]','$input[phone]','$input[number]','$input[pass]');";
+		$ret = db_req_reg($req);
+		if(!$ret == "")
+		{
+			$ans = array("ans"=>"error","msg"=>$ret);
+			echo json_encode($ans);
+		}
+		else
+		{
+			$ans = array("ans"=>"ok");
+			echo json_encode($ans);
+		}
+
+	}
+	if($input['id']=="login")
+	{
+
+		$req = "SELECT * FROM `taxist` WHERE `username`='$input[name]';";
+		$ret = db_req($req);
+		if($ret[pass_taxist] == $input['pass'])
+		{
+			///Online
+			$req = "UPDATE `taxist` SET `online`=1 WHERE `username`=$input[name];";
+			$ret = db_req_reg($req);
+			$ans = array("ans"=>"ok","msg"=>$ret);
+			setcookie("user", $input['name'],time()+9000000);
+			setcookie("pass", $input['pass'],time()+9000000);
+                        echo json_encode($ans);
+		}
+			else
+		{
+			$ans = array("ans"=>"error","msg"=>$ret);
+                        echo json_encode($ans);
+		}
+	}
+	if($input['id']=="cookie")
+	{
+		$req = "SELECT * FROM `taxist` WHERE `username`='$input[user]';";
+                $ret = db_req($req);
+                if($ret[pass_taxist] == $input['pass']&&!$input['user']=="")
+                {
+			$req = "UPDATE `taxist` SET `online`=1 WHERE `username`=$input[user];";
+			$ret = db_req_reg($req);
+			$ans = array("ans"=>"ok","msg"=>$ret);
+			echo json_encode($ans);
+                }
+                else
+                {
+			$ans = array("ans"=>"error");
+			echo json_encode($ans);
+                }
+
+	}
+
+	if($input['id']=="start")
+	{
+	        $req = "SELECT * FROM `taxist` WHERE `username`='$input[user]';";
+                $ret = db_req($req);
+		//echo $ret;
+                if($ret['pass_taxist'] == $input['pass']&&!$input['user']=="")
+                {
+			if($input['work_status']==1)
+			{
+				$req = "UPDATE `taxist` SET `work`='1' WHERE `username`='$input[user]';";
+				db_req_without_resp($req);
+			}
+			if($input['work_status']==0)
+			{
+				$req = "UPDATE `taxist` SET `work`='0' WHERE `username`='$input[user]';";
+                                db_req_without_resp($req);
+			}
+                        $ans = array("ans"=>"ok",$input['user']=>$input['pass'],"work"=>$input['work_status']);
+                        echo json_encode($ans);
+                }
+                else
+                {
+                        $ans = array("ans"=>"error");
+                        echo json_encode($ans);
+                }
+
+
+	}
+	if($input['id']=="geo")
+	{
+
+		if($input[long]>=127&&$input[long]<=130&&$input[lat]<=63&&$input[lat]>=60)
+		{
+			$ans = array("ans"=>"ok");
+			echo json_encode($ans);
+		        $req = "SELECT `taxist_id` FROM `taxist` WHERE `username`='$input[user]';";
+		        $tax_id = db_req($req);
+			$req = "INSERT INTO `geoloc` (`taxist_id`, `long`, `lat`) VALUES ('$tax_id[taxist_id]', '$input[long]', '$input[lat]');";
+			db_req_without_resp($req);
+		}
+		else
+		{
+			$ans = array("ans"=>"error");
+			echo json_encode($ans);
+		}
+
+	}
+}
+///////////////////////////
+//АРГУМЕНТЫ С АСТЕРИСКА.///
+///////////////////////////
+if($argv[0]=="/var/www/indriver/modules/api.php")
+{
+	if($argv[1]=="input")
+	{
+
+		$sql = "SELECT `taxist_id`,`phone_taxist` FROM `taxist`";
+		$asd = db_reqss($sql);
+		foreach($asd as $dsa)
+		{
+			if(substr($argv[2],1,10)==$dsa['phone_taxist'])
+			{
+				$sql = "UPDATE `taxist` SET `connected`='1' WHERE `taxist_id`=".$dsa['taxist_id'];
+				db_req_without_resp($sql);
+				$sql = "INSERT INTO `sip_channels` (`sip_channel`, `taxist_id`) VALUES ('".$argv[3]."', '".$dsa['taxist_id']."');";
+				db_req_without_resp($sql);
+				echo "ok";
+			}
+		}
+	}
+	if($argv[1]=="hangup")
+	{
+		$numb = substr($argv[2],1,10);
+		$sql = "UPDATE `taxist` SET `connected`='0' WHERE `phone_taxist`=".$numb;
+		db_req_without_resp($sql);
+		$sql = "DELETE FROM `sip_channels` WHERE `sip_channel`='".$argv[3]."'";
+		db_req_without_resp($sql);
+		$sql = "SELECT * FROM indriver.taxist WHERE `phone_taxist`=".$numb;
+		$ss = db_req($sql);
+		$sql = "DELETE FROM `sip_channels` WHERE taxist_id='".$ss['taxist_id']."'";
+		db_req_without_resp($sql);
+	}
+	if($argv[1]=="ready")
+	{
+		$numb = substr($argv[2],1,10);
+		$sql = "SELECT * FROM indriver.taxist WHERE `phone_taxist`=".$numb;
+		$ss = db_req($sql);
+		i
+		f($ss['work']==1)
+		{
+	$req = "SELECT taxist_id FROM geoloc WHERE `time` >= (now() - interval 5 minute) AND `phone_taxist`=".$";
+			$geo = db_reqss($req);
+			$req = "SELECT `taxist_id` FROM `taxist` WHERE `geo_actual`='1';";
+			$online = db_reqss($req);
+			foreach($online as $gg)
+			{
+				$i=0;
+				foreach($geo as $on)
+				{
+					if($on['taxist_id']==$gg['taxist_id'])
+					{
+					$i=1;
+					}
+				}
+				if($i==0)
+				{
+					//echo $gg['taxist_id']." turn offline\n";
+					req = "UPDATE `taxist` SET `online`=0 WHERE `taxist_id`=$gg[taxist_id];";
+					db_req_without_resp($req);
+					$req = "UPDATE `taxist` SET `work`=0 WHERE `taxist_id`=$gg[taxist_id];";
+					db_req_without_resp($req);
+				}
+			}
+		}
+		else
+		{
+			echo "0";
+		}
+	}
+}
+
+if($input['action']=="get")
+{
+	if($input['id']=="client")
+	{
+		///////////////////////////////
+		/////РЕЗУЛЬТАТЫ
+		///////////////////////////////
+	}
+}
+
+
+?>

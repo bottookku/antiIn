@@ -1,0 +1,19 @@
+<?php
+$sd = json_decode(implode(file("https://maps.googleapis.com/maps/api/place/autocomplete/json?input=ле&types=establishment&location=62.0295456,129.7357129&radius=15000&components=country:ru&key=AIzaSyA_An-guXzm_EP6HWSjtkWh89GSgPMom6w")));
+
+
+
+//foreach($sd as $key => $ss)
+//{
+//echo $key;
+print_r($sd[status]);
+//}
+
+
+
+
+
+
+?>
+
+

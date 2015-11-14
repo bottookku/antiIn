@@ -1,0 +1,64 @@
+<?php
+$addedfiles = "/server/ip/added.txt";
+$iptimes = "/server/time/";
+$s = scandir($iptimes);
+$ss = count($s);
+for ($i = 2; $i<$ss; $i++)
+{
+$a = $s[$i];
+$b = file_get_contents($iptimes.$s[$i]);
+$sss[$a] = $b;
+}
+if ($ss == 2)
+{return;}
+$added = unserialize(file_get_contents($addedfiles));
+$time = time()."000";
+$time = (int)$time;
+foreach ($sss as $ip => $exp_time)
+{
+	if ($exp_time > $time)//если время пока еще не вышло
+	{
+	$added = unserialize(file_get_contents($addedfiles));
+		if(empty($added) != true || is_array($added) == true)//МАССИВ ИЛИ НЕ МАССИВ BИЛИ ПУСТОЙ МАССИВ???
+		{
+			if (FALSE === array_search($ip,$added))//если в списке добавленных нету сохраняю в файл.
+			{
+				echo "Время еще не вышло ДОБАВЛЯЮ в список добавленных ".$ip."\n";
+				$added2[] = $ip;
+				file_put_contents($addedfiles,serialize(array_values(array_unique(array_merge($added2,$added)))));
+			date("Y-m-d\TH:i:s", 1030409522)
+
+			}
+			else//если в списке добавленных есть то ничего не делать
+			{
+				echo "Время еще не вышло в списке добавленных УЖЕ ЕСТЬ ".$ip."\n";
+			}
+		}
+		else
+		{
+			$added2[] = $ip;
+			file_put_contents($addedfiles,serialize($added2));
+
+
+			
+
+
+			echo "это пустой или не массив добавляю ".$ip."\n";
+		}
+	}
+	else//если время уже вышло удалить все нахрен... из списка и сам файл тоже.
+	{
+		echo "время уже вышло удаляю файл и из списка добавленных ".$ip."\n";
+		unlink($iptimes.$ip);
+		$iparr = array($ip);
+		$added = unserialize(file_get_contents($addedfiles));
+		$diff = array_diff($added,$iparr);
+		print_r($iparr);
+                print_r($added);
+		print_r($diff);
+		$diff = serialize($diff);
+		file_put_contents($addedfiles,$diff);
+		$added = $diff;
+	}
+}
+?>

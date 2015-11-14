@@ -1,0 +1,90 @@
+<?php
+error_reporting(E_ALL);
+$ss = explode("_",$_COOKIE[id]);
+$sss = mysql_connect("localhost", "root", "356386") or
+die("Ошибка соединения: " . mysql_error());
+mysql_set_charset('utf8',$sss);
+mysql_select_db("mydb");
+$result2 = mysql_query("SELECT user,pass FROM mydb.user WHERE user=\"".$ss[0]."\"");
+while ($row1[]=mysql_fetch_array($result2)) {
+}
+if($ss[0]==$row1[0][0]&&$ss[1]==$row1[0][1]&&$row1[0][0]!==null)
+//ЕСЛИ ПАРОЛЬ И ЛОГИН ИЗ КУКИ ВЕРНЫ...
+{
+	if($_POST[num]=="")
+	{$_POST[num]=1;}
+	if($_POST[captcha]=="")
+	{
+		$KEY = 0;
+		goto a;
+	}
+	if($_POST[captcha]!==null&&$_POST[idd]!==null)
+	//если капчу ввели...
+	{
+		$sss = mysql_connect("localhost", "root", "356386") or
+		die("Ошибка соединения: " . mysql_error());
+		mysql_set_charset('utf8',$sss);
+		mysql_select_db("mydb");
+$result2 = mysql_query("SELECT captcha FROM mydb.rekl_page WHERE rekl_id=\"".$_POST[idd]."\" AND num=\"".$_POST[num]."\"");
+		while ($row2[]=mysql_fetch_array($result2)){}
+		if($row2[0][captcha] == $_POST[captcha])
+		//если капча верна
+        	{
+			$KEY = 1;
+			$_POST[num] = $_POST[num] + 1;
+			//echo $_POST[num];
+			if($_POST[num]>3)
+			//если количество больше ТРЕХ то это последняя хуйня
+			{
+$result2 = mysql_query("SELECT redirect FROM mydb.rekl_id WHERE rekl_id=\"".$_POST[idd]"\"");
+				$row2=mysql_fetch_array($result2);
+				echo $row2;
+				//echo json_encode("success");
+				                        /*
+                	        //СОКРАТИТЬ РЕСТРИКТРЕД на 1
+        	                $result3 = mysql_query("SELECT restrictred FROM mydb.rekl_id WHERE rekl_id=\"".$_POST[idd]."\"");
+	                        $row1=mysql_fetch_array($result3);
+                	        $count = $row1[restrictred] - 1;
+        	                if($count<0)
+	                        {
+                                	//если ниже нуля
+                        	        return;
+                	        }
+        	                $result4 = mysql_query("UPDATE `mydb`.`rekl_id` SET `restrictred`=\"".$count."\" WHERE `rekl_id`=\"".$
+	                        */
+				return;
+			}
+			else
+			{
+				goto a;
+			}
+		}
+		        else
+		//если капча ошибочна
+		{
+                	//ЧТО ДЕЛАТЬ???
+		        $KEY = 0;
+        	}
+	}
+}
+
+else
+//если парль от куки не верны...
+{
+	echo json_encode("error");
+	setcookie ("id", "", 1);
+	return;
+}
+
+a:
+
+$result1 = mysql_query("SELECT rekl_id FROM mydb.rekl_id WHERE restrictred>0 order by rekl_id limit 1");
+while ($row[]=mysql_fetch_array($result1)){}
+$rekk = $row[0][rekl_id];
+
+	$result33 = mysql_query("SELECT title,text,answer,hint,rekl_id,num FROM mydb.rekl_page WHERE rekl_id=$rekk AND num=\"".$_POST[num]."\"");
+        while ($rodd[]=mysql_fetch_array($result33)){}
+        $rekl = $rodd[0];
+	$rekl = array_merge($rekl, array("captcha" => "$KEY"));
+        echo json_encode($rekl);
+?>

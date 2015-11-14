@@ -1,0 +1,34 @@
+<html>
+<head>
+<meta charset=utf-8>
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+        $('#ok').click(function(){
+        var user = $('#user').val();
+        var pass = $('#pass').val();
+        $.post("check1.php",{user: user, pass: pass},function(data)
+        {
+	if (data == "ok")
+	{
+	$(document).ready(function(){
+	window.location.href = "rekl.html";
+	});
+	}
+	});
+	});
+
+
+});
+
+</script>
+</head>
+<body>
+<center>Авторизация</center>
+Введите имя пользователья:<br><input type='text' id='user' size='10'>
+<br>Введите пароль:<br><input type='password' id='pass' size='10'>
+<br><button id="ok">ACCEPT</button>
+<br>если у вас нет логина <a href=html.html>зарегистрируйтесь</a>
+</body>
+</html>
+

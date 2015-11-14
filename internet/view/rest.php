@@ -1,0 +1,108 @@
+<html>
+<head>
+<meta charset=utf-8>
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	$.post("module/check.php","",function(data)
+	{
+		if(data == "\nerror")
+		{
+			window.location.href = "login.html";
+		}
+		else
+		{
+			$('#title').html(data.title);
+			$('#text').html(data.text);
+			$('#input').html(data.captcha);
+			$('#hint').html(data.hint);
+			$('#answer').html(data.answer);
+			$('#idd').val(data.rekl_id);
+			$('#num').val(data.num);
+			$('#112').html(data.login);
+			$('#mac').val(data.mac);
+		}
+	},"json");
+//---------------------------------------------------------------------------------
+	$('#butt').click(function(){
+		$('#ss').remove();
+		var idd = $('#idd').val();
+		var num = $('#num').val();
+		var mac = $('#mac').val();
+		if(mac==""||num==""||idd=="")
+		{
+			window.location.href = "rekl.html";
+		}
+		$.post("module/check.php",{captcha: $('#input').val(), idd: idd, num: num, mac: mac},function(data){
+			$('input').val("");
+			if(data.ok == "ok")
+			{
+				$('#bott').fadeIn();
+				$('#bott').append("<font color=green id=ss>Поздравляю</font>");
+				setTimeout(function () {
+				location.href = data.redirect;
+				}, 2000);
+			}
+			if(data.captcha == 0)
+                	{
+				$('#bott').fadeIn();
+				$('#bott').append("<font color=red id=ss>Не правильно</font>").delay(1000).fadeOut("slow");
+	                }
+			if(data.captcha == 1)
+			{
+				$('#bott').fadeIn();
+                                $('#bott').append("<font color=green id=ss>Правильно</font>").delay(1000).fadeOut("slow");
+			}
+			$('#idd').val(data.rekl_id);
+                        $('#title').html(data.title);
+                        $('#text').html(data.text);
+                        $('#input').html(data.captcha);
+                        $('#hint').html(data.hint);
+                        $('#answer').html(data.answer);
+                        $('#num').val(data.num);
+			$('#mac').val(data.mac);
+
+			if(data.suka == 0)
+			{
+				$('#bott').fadeIn();
+				$('#bott').append("<font color=red id=ss>Время еще не вышло подождите еще "+data.time+"</font>").delay(3000).fadeOut("slow");
+			}
+			if(data.suka == 1)
+                        {
+				$('#bott').fadeIn();
+				$('#bott').append("<font color=red id=ss>"+data.time+"</font>").delay(500).fadeOut("slow");
+				setTimeout(function(){
+				location.reload();
+				},2000);
+                        }
+		},"json");
+
+
+	});
+
+
+});
+</script>
+</head>
+<body>
+<a id=112 href=lk.html></a>
+<input id=idd hidden>
+<input id=num hidden>
+<input id=mac hidden>
+<center><font id=title size=4><b></font><b></center>
+<br>
+Текст:
+<div id=text></div>
+<br>
+<br>
+<br>
+Вопрос:
+<div id=answer></div>
+<br>
+Подсказка:
+<div id=hint></div>
+<input type=text size=20 id=input name=input>
+<br><button id=butt>Ответить</button>
+<div id="bott"></div>
+</body>
+</html>

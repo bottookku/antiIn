@@ -1,0 +1,47 @@
+<?php
+
+$addedfiles = "/server/ip/added.txt";
+$iptimes = "/server/time/";
+
+$s = scandir($iptimes);
+$ss = count($s);
+for ($i = 2; $i<$ss; $i++)
+{
+$a = $s[$i];
+$b = file_get_contents($iptimes.$s[$i]);
+$sss[$a] = $b;
+}
+$added = unserialize(file_get_contents($addedfiles));
+//print_r($added);
+
+$time = time()."000";
+
+foreach ($sss as $ip => $exp_time)
+{
+	if ($exp_time > $time)//если время пока еще не вышло
+		{
+		if (FALSE == array_search($ip, $added))//если в списке добавленных нету
+			{
+//			echo array_search($ip,$added);
+			echo "ВС СПИСКАХ НЕТ!";
+			$added2[]= $ip;
+			}
+		}
+	else//если время уже вышло
+	{
+
+		if(FALSE != array_search($ip,$added))
+		{
+			unlink($iptimes.$ip);
+			file_put_contents($addedfiles,serialize(array_diff(unserialize(file_get_contents($addedfiles)),array($ip))));
+		}
+
+	}
+}
+
+
+
+//ДОБАВИТЬ В СПИСОК ДОБАВЛЕННЫХ ТОЛЬКО ПОСЛЕ УДАЛЕНИЯ УДАЛЕННЫЪ ПЕРЕМЕННЫХ.....!!!!!!!
+file_put_contents($addedfiles,serialize($added));
+//print_r($added2);
+?>

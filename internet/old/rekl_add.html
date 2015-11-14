@@ -1,0 +1,44 @@
+<html>
+<head>
+<meta charset=utf-8>
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+        $.post('summ.php',function(data){
+		$('#summ').append("Денег на вашем счету: <b>" +data +" руб</b>");
+	});
+        $.post('cost1.php',function(data){
+                $('#summ1').append("Цена за один показ: " +data +" руб");
+        });
+	$.post('rekl.php',{0: "1"},function(data){
+		$.each(data, function(aa,ss){
+		vv = aa;
+			if(vv == 0)
+			{}
+			else
+			{
+			$('.1').append("<a href=111.php?1="+vv+"&2=1>реклама ID# "+vv+"<br>");
+			}
+		});
+	},"json");
+	$('#bb').click(function(){
+	$.post('add.php',function(data){});
+	window.location.reload();
+	});
+});
+</script>
+</head>
+<body>
+<font color=red>Уведомление о окончании баланса</font><br>
+<a href=lk.html>Назад</a><br><br>
+<b>Моя реклама</b><br><br>Показом считается когда пользователь ответил на 3 вопроса правильно.
+<br>Тогда из вашего баланса спишется цена одного показа.
+<p id=summ>
+<p id=summ1>
+<p class=1>
+</form>
+<a href=pay.php>Пополнить баланс</a><br>
+<br><button id=bb>Добавить рекламу</button><br><br>
+</body>
+</html>
+

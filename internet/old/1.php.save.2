@@ -1,0 +1,242 @@
+<?php
+////////////////////////////////////////////////////
+////						////
+////	ПРАВИЛЬНОЕ ВРЕМЯ НА РОУТЕРЕ!!!!!!	////
+//// 	ДОСТУП К ВЕБ ПРИЛОЖЕНИЮ БЕЗ НАТА 	////
+////	ЧТОБЫ ВИДЕТЬ ВНУТРЕННИЙ АЙПИ		////
+////						////
+////////////////////////////////////////////////////
+$routers = array
+	(
+		array('ip'=>'192.168.4.4','range'=>'192.168.92','user'=>'root','pass'=>'356386','type'=>'openwrt'),
+		array('ip'=>'192.168.41.2','range'=>'192.168.93','user'=>'admin','pass'=>'356386','type'=>'mikrotik')
+	);
+//НА СТОРОНЕ СЕРВЕРА
+$addedfiles = "/server/ip/added.txt";
+$iptimes = "/server/time/";
+/// НА СТОРОНЕ РОУТЕРА.
+$dhcpd_conf = "/etc/dhcp/dhcpd.conf";
+$lease_file = "/var/lib/dhcp/dhcpd.leases";
+
+
+function check_lease($ip,$lease_file)
+{
+$sst = file_get_contents($lease_file);
+$ssa = strrpos($sst,$ip);
+return $ssa;
+}
+function search_mac($lease_file,$ssa)
+{
+	$sst = file_get_contents($lease_file);
+	$ssb = strpos($sst,"hardware ethernet",$ssa);
+	$MAC = substr($sst,$ssb+18,17);
+	return $MAC;
+}
+function put_mac($ip,$MAC,$dhcpd_conf)
+{
+$data = "host ".$ip."{hardware ethernet ".$MAC.";fixed-address ".$ip.";}\n";
+file_put_contents($dhcpd_conf, $data, FILE_APPEND);
+}
+
+function del_mac($ip,$dhcpd_conf)
+{
+$mm = file_get_contents($dhcpd_conf);
+$datt = "/host $ip(.*)\n/";
+preg_replace($datt,"",$mm);
+file_put_contents($dhcpd_conf,preg_replace($datt,"",$mm));
+}
+
+function put_iptables($ip,$exp)
+{
+$show = date("Y-m-d\TH:i:s",$exp);
+exec("iptables -I FORWARD 2 -i tap0 --source $ip -m time --kerneltz --datestop $show -j ACCEPT");
+echo "iptables -I FORWARD 2 -i tap0 --source ".$ip." -m time --kerneltz --datestop ".$show." -j ACCEPT";
+}
+function del_iptables($ip,$exp)
+{
+echo $exp;
+$show1 = date("Y-m-d\TH:i:s", $exp);
+exec("iptables -D FORWARD -s $ip -i tap0 -m time --kerneltz --datestop $show1 -j ACCEPT");
+}
+
+
+
+$s = scandir($iptimes);
+$ss = count($s);
+for ($i = 2; $i<$ss; $i++)
+{
+$a = $s[$i];
+$b = file_get_contents($iptimes.$s[$i]);
+$b = substr($b,0,-1);
+$sss[$a] = $b;
+}
+
+if ($ss == 2)
+{return;}
+$added = unserialize(file_get_contents($addedfiles));
+$time = time();
+
+
+foreach ($sss as $ip => $exp_time)
+{
+$aag = strrpos($ip,".");
+$fft = substr($ip,0,$aag);
+echo "IP: ".$fft."*****\n";
+	foreach($routers as $ident => $route)
+	{
+//		print_r($route);
+		if ($fft == $route[range])
+		{
+			echo "TYPE: ".$route[type];
+		}
+	}
+
+
+
+
+	if ($exp_time > $time)//если время пока еще не вышло
+	{
+		if(empty($added) == false && is_array($added) == true)//МАССИВ ИЛИ НЕ МАССИВ BИЛИ ПУСТОЙ МАССИВ???
+		{
+			if (FALSE == array_key_exists($ip,$added))//если в списке добавленных нету сохраняю в файл.
+			{
+				$ssa = check_lease($ip,$lease_file);
+				if ($ssa == FALSE)// если мак не найден игнорить
+				{
+					echo "ВНИМАНИЕ МАК АДРЕСС НЕ НАЙДЕН!!! на ".$ip."\n";
+				}
+				else
+				{
+				$MAC = search_mac($lease_file,$ssa);
+				put_mac($ip,$MAC,$dhcpd_conf);
+                                echo "Новое время еще не добавлено добавляем ".$ip."\n";
+                                $added2[$ip] = $exp_time;
+				put_iptables($ip,$exp_time);
+				}
+
+			}
+			else//если в списке добавленных есть
+			{
+				echo "Время еще не вышло в списке добавленных УЖЕ ЕСТЬ ".$ip."\n";
+					if ($exp_time == $added[$ip])
+					{
+						echo "время НЕ меняли ".$ip." было ".$added[$ip]." стало ".$exp_time."\n";
+					}
+					else
+					{
+						echo "время МЕНЯЛИ ".$ip." было ".$added[$ip]." стало ".$exp_time."\n";
+						$added2[$ip] = $exp_time;
+						del_iptables($ip,$added[$ip]);
+						put_iptables($ip,$exp_time);
+					}
+			}
+		}
+		else//Создаем новый файл
+		{
+
+			$ssa = check_lease($ip,$lease_file);
+			if ($ssa == FALSE)// если мак не найден игнорить
+                        {
+                                echo "ВНИМАНИЕ МАК АДРЕСС НЕ НАЙДЕН!!! на ".$ip."\n";
+                        }
+                        else
+                        {
+                                $MAC = search_mac($lease_file,$ssa);
+                                put_mac($ip,$MAC,$dhcpd_conf);
+                                $added2[$ip] = $exp_time;
+                                put_iptables($ip,$exp_time);
+        	                echo "Сохраненный файл пустой или не массив добавляю на чистое ".$ip."\n";
+                        }
+
+
+		}
+	}
+	else //если время уже вышло удалить все нахрен... из списка и сам файл тоже.
+	{
+		echo "время уже вышло удаляю файл и из списка добавленных ".$ip."\n";
+		unlink($iptimes.$ip);
+		del_iptables($ip,$added[$ip]);
+		del_iptables($ip,$exp_time);
+		$ipdell[$ip] = $exp_time;
+		del_mac($ip,$dhcpd_conf);
+
+	}
+}
+
+
+
+if (empty($added2) == FALSE)
+{
+	echo "Добавляемая переменная существует\n";
+	if (is_array($added2) == TRUE)
+	{
+		echo "Добавляемая переменная массив\n";
+		if (empty($added) == TRUE)
+		{
+			if (empty($ipdell)==false)
+			{
+				echo "Сохраненная переменная пустая, протсо добавляю, переменная удаления сущестует\n";
+				file_put_contents($addedfiles,serialize(array_diff_key($added2,$ipdell)));
+			}
+			else
+			{
+				echo "Сохраненная переменная пустая, протсо добавляю\n";
+				file_put_contents($addedfiles,serialize($added2));
+			}
+		}
+		else
+		{
+			echo "Сохраненная переменная не пустая\n";
+			if (is_array($added) == TRUE)
+			{
+				if (empty($ipdell)==false)
+	                        {
+					echo "Сохраненная переменная массив, добавляю новые элементы, перемнная удалния существует\n";
+					$merg = array_merge($added,$added2);
+					$differ = array_diff_key($merg,$ipdell);
+					file_put_contents($addedfiles,serialize($differ));
+				}
+				else
+				{
+					echo "Сохраненная переменная массив, добавляю новые элементы\n";
+					file_put_contents($addedfiles,serialize(array_merge($added,$added2)));
+				}
+			}
+			else
+			{
+				echo "ошибка из сохраненного файла $addedfiles идет перменная НЕ МАССИВ!!!!!! ничего не добавлено\n";
+			}
+		}
+	}
+	else
+	{
+		echo "ОШИБКА!!! добавляемая переменаня не массив\n";
+	}
+
+}
+else
+{
+	echo "ничего добавлять не буду добавляемая переменная пустая\n";
+	if (empty($ipdell)==false)
+	{
+		echo "перемнная удалния существует\n";
+		print_r($ipdell);
+		print_r($added);
+		$aaa = array_diff_key($added,$ipdell);
+		print_r($aaa);
+		file_put_contents($addedfiles,serialize($aaa));
+
+
+	}
+	else
+	{
+		echo "перемнная удалния отсутвует\n";
+	}
+
+}
+
+
+
+
+
+?>

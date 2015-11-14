@@ -1,0 +1,12 @@
+222notification_type: card-incoming
+amount: 0.98
+datetime: 2015-07-01T14:28:55Z
+codepro: false
+withdraw_amount: 1.00
+sender: 
+sha1_hash: fd8e33e185c78a67b18c0d400112750163d81e3f
+unaccepted: false
+operation_label: 1d260cc2-0002-5000-8033-022afa5201ba
+operation_id: 489076135455014012
+currency: 643
+label: 186

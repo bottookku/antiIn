@@ -1,0 +1,116 @@
+<?php
+$inputJSON = file_get_contents('php://input');
+$input= json_decode($inputJSON, TRUE ); //convert JSON into array
+require_once "/var/www/indriver/function/db_api.php";
+
+$input = array(
+"id"=>"cookie",
+"action"=>"put",
+"user"=>"",
+"pass"=>""
+;
+
+
+
+if($input[action]==put)
+{
+	if($input[id]==reg)
+	{
+		$req = "INSERT INTO taxist (`username`,`priznak`,`phone_taxist`,`number_taxist`,`pass_taxist`) VALUES ('$input[name]','$input[desk]','$input[phone]','$input[number]','$input[pass]');";
+		$ret = db_req_reg($req);
+		if(!$ret == "")
+		{
+			$ans = array("ans"=>"error","msg"=>$ret);
+			echo json_encode($ans);
+		}
+		else
+		{
+			$ans = array("ans"=>"ok");
+			echo json_encode($ans);
+		}
+
+	}
+	if($input[id]==login)
+	{
+
+		$req = "SELECT * FROM `taxist` WHERE `username`='$input[name]';";
+		$ret = db_req($req);
+		if($ret[pass_taxist] == $input[pass])
+		{
+			$ans = array("ans"=>"ok");
+			setcookie("user", $input[name],time()+9000000);
+			setcookie("pass", $input[pass],time()+9000000);
+                        echo json_encode($ans);
+		}
+			else
+		{
+			$ans = array("ans"=>"error","msg"=>$ret);
+                        echo json_encode($ans);
+		}
+	}
+	if($input[id]==cookie)
+	{
+		$req = "SELECT * FROM `taxist` WHERE `username`='$input[user]';";
+                $ret = db_req($req);
+                if($ret[pass_taxist] == $input['pass']&&!$input['user']=="")
+                {
+			$ans = array("ans"=>"ok");
+			echo json_encode($ans);
+                }
+                else
+                {
+			$ans = array("ans"=>"error");
+			echo json_encode($ans);
+                }
+
+	}
+
+	if($input[id]==start)
+	{
+	        $req = "SELECT * FROM `taxist` WHERE `username`='$input[user]';";
+                $ret = db_req($req);
+                if($ret[pass_taxist] == $input['pass']&&!$input['user']=="")
+                {
+			if($input[work_status]==1)
+			{
+				$req = "UPDATE `taxist` SET `work`='1' WHERE `username`='$input[user]';";
+				db_req_without_resp($req);
+			}
+			if($input[work_status]==0)
+			{
+				$req = "UPDATE `taxist` SET `work`='0' WHERE `username`='$input[user]';";
+                                db_req_without_resp($req);
+			}
+                        $ans = array("ans"=>"ok",$input[user]=>$input['pass'],"work"=>$input[work_status]);
+                        echo json_encode($ans);
+                }
+                else
+                {
+                        $ans = array("ans"=>"error");
+                        echo json_encode($ans);
+                }
+
+
+	}
+	if($input[id]==geo)
+	{
+
+//		file_put_contents("sss",$intput[lat]);
+
+                $req = "SELECT * FROM `taxist` WHERE `username`='$input[user]';";
+                $ret = db_req($req);
+                if($ret[pass_taxist] == $input['pass']&&!$input['user']=="")
+                {
+			file_put_contents("sss",$intput[lat]);
+		}
+		else
+		{
+	                $ans = array("ans"=>"login_error");
+                        echo json_encode($ans);
+		}
+	}
+}
+
+
+
+?>

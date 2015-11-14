@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf8>
+<script>
+navigator.geolocation.getCurrentPosition(function(position) {
+var latitude = position.coords.latitude;
+var longitude = position.coords.longitude;
+var xhttp=new XMLHttpRequest();
+xhttp.open("GET","/indriver/modules/loc.php?lat="+latitude+"&long="+longitude,true);
+xhttp.send();
+});
+setInterval(function(){
+navigator.geolocation.getCurrentPosition(function(position) {
+var latitude = position.coords.latitude;
+var longitude = position.coords.longitude;
+var xhttp=new XMLHttpRequest();
+xhttp.open("GET","/indriver/modules/loc.php?lat="+latitude+"&long="+longitude,true);
+xhttp.send();
+});
+},15000);
+</script>
+
+<script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js">
+$(document).ready(function(){
+$.post("indriver/module/read.php","",function(data)
+        {
+                        $('#from').html(data.from);
+                        $('#to').html(data.to);
+                        $('#dist').html(data.dist);
+                        $('#price').html(data.price);
+			$('#phone').html(data.phone);
+        }
+},"json");
+</script>
+
+
+</head>
+<body>
+<div id=from>
+<div id=to>
+<div id=price>
+<div id=dist>
+<div id=phone>
+</body>
+</html>
+<?php
+
+?>
+

@@ -1,0 +1,74 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 2 (0x2)
+    Signature Algorithm: sha1WithRSAEncryption
+        Issuer: C=RU, ST=Republic of Sakha, L=Yakustk, O=bottookku inc, OU=botto, CN=bottookku.tk/name=bottookku.tk/emailAddress=tiuman@mail.ru
+        Validity
+            Not Before: Apr 27 04:07:40 2015 GMT
+            Not After : Feb  9 04:07:40 2289 GMT
+        Subject: C=RU, ST=Republic of Sakha, L=Yakustk, O=bottookku inc, OU=botto, CN=client/name=bottookku.tk/emailAddress=tiuman@mail.ru
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (1024 bit)
+                Modulus:
+                    00:ce:9b:99:4d:67:68:e5:18:42:ca:ab:63:49:94:
+                    ed:ce:f1:06:62:f5:5c:68:c8:42:8e:87:3e:11:cd:
+                    21:b0:fe:44:ac:43:68:56:86:a2:d9:c0:3b:53:0f:
+                    42:d1:00:68:70:f5:1a:52:bb:08:4c:0b:67:b1:f7:
+                    bf:e7:bc:0f:d0:b2:98:e7:c1:da:2a:06:e4:1a:94:
+                    02:58:f4:e8:06:b7:a9:4a:43:5f:06:29:6a:f6:4d:
+                    1f:33:16:d8:e2:8b:b7:7d:3b:80:22:61:fa:1c:75:
+                    b4:8c:3d:dc:6b:ea:ab:40:f9:d4:40:45:2f:f7:2a:
+                    fa:4c:6d:dc:e5:46:9c:5f:0b
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            Netscape Comment: 
+                Easy-RSA Generated Certificate
+            X509v3 Subject Key Identifier: 
+                FF:87:21:AA:FD:3B:DF:19:DD:19:63:B4:40:09:9D:A0:86:3D:94:DE
+            X509v3 Authority Key Identifier: 
+                keyid:AE:36:EA:A9:D5:67:9C:80:FD:FA:1F:71:3A:93:95:F7:B0:47:7F:AC
+                DirName:/C=RU/ST=Republic of Sakha/L=Yakustk/O=bottookku inc/OU=botto/CN=bottookku.tk/name=bottookku.tk/emailAddress=tiuman@mail.ru
+                serial:A2:3C:11:0F:6F:6E:35:3D
+
+            X509v3 Extended Key Usage: 
+                TLS Web Client Authentication
+            X509v3 Key Usage: 
+                Digital Signature
+    Signature Algorithm: sha1WithRSAEncryption
+         85:e6:8b:d3:7d:f0:ad:5f:f9:69:03:2e:15:e3:30:84:6f:5f:
+         f2:45:41:21:2d:c1:79:cb:6a:8c:e1:e8:87:c9:a3:39:ab:e2:
+         c6:ef:f3:c3:e5:52:b1:54:c8:2e:fb:76:8b:93:09:25:35:2d:
+         19:cd:75:68:ed:bc:ab:97:6d:6f:05:17:81:e8:4d:56:d8:1f:
+         46:ef:31:52:d8:9a:ae:96:b2:61:27:7b:df:9d:6b:b0:3c:f9:
+         b4:5a:8a:09:27:00:fc:ba:1b:e6:fc:57:33:5b:09:73:e5:8c:
+         de:36:b0:7b:ed:ad:55:f1:1e:41:fa:59:11:d8:e7:1a:4f:52:
+         47:d8
+-----BEGIN CERTIFICATE-----
+MIIEPTCCA6agAwIBAgIBAjANBgkqhkiG9w0BAQUFADCBsDELMAkGA1UEBhMCUlUx
+GjAYBgNVBAgTEVJlcHVibGljIG9mIFNha2hhMRAwDgYDVQQHEwdZYWt1c3RrMRYw
+FAYDVQQKEw1ib3R0b29ra3UgaW5jMQ4wDAYDVQQLEwVib3R0bzEVMBMGA1UEAxMM
+Ym90dG9va2t1LnRrMRUwEwYDVQQpEwxib3R0b29ra3UudGsxHTAbBgkqhkiG9w0B
+CQEWDnRpdW1hbkBtYWlsLnJ1MCAXDTE1MDQyNzA0MDc0MFoYDzIyODkwMjA5MDQw
+NzQwWjCBqjELMAkGA1UEBhMCUlUxGjAYBgNVBAgTEVJlcHVibGljIG9mIFNha2hh
+MRAwDgYDVQQHEwdZYWt1c3RrMRYwFAYDVQQKEw1ib3R0b29ra3UgaW5jMQ4wDAYD
+VQQLEwVib3R0bzEPMA0GA1UEAxMGY2xpZW50MRUwEwYDVQQpEwxib3R0b29ra3Uu
+dGsxHTAbBgkqhkiG9w0BCQEWDnRpdW1hbkBtYWlsLnJ1MIGfMA0GCSqGSIb3DQEB
+AQUAA4GNADCBiQKBgQDOm5lNZ2jlGELKq2NJlO3O8QZi9VxoyEKOhz4RzSGw/kSs
+Q2hWhqLZwDtTD0LRAGhw9RpSuwhMC2ex97/nvA/QspjnwdoqBuQalAJY9OgGt6lK
+Q18GKWr2TR8zFtjii7d9O4AiYfocdbSMPdxr6qtA+dRARS/3KvpMbdzlRpxfCwID
+AQABo4IBZzCCAWMwCQYDVR0TBAIwADAtBglghkgBhvhCAQ0EIBYeRWFzeS1SU0Eg
+R2VuZXJhdGVkIENlcnRpZmljYXRlMB0GA1UdDgQWBBT/hyGq/TvfGd0ZY7RACZ2g
+hj2U3jCB5QYDVR0jBIHdMIHagBSuNuqp1WecgP36H3E6k5X3sEd/rKGBtqSBszCB
+sDELMAkGA1UEBhMCUlUxGjAYBgNVBAgTEVJlcHVibGljIG9mIFNha2hhMRAwDgYD
+VQQHEwdZYWt1c3RrMRYwFAYDVQQKEw1ib3R0b29ra3UgaW5jMQ4wDAYDVQQLEwVi
+b3R0bzEVMBMGA1UEAxMMYm90dG9va2t1LnRrMRUwEwYDVQQpEwxib3R0b29ra3Uu
+dGsxHTAbBgkqhkiG9w0BCQEWDnRpdW1hbkBtYWlsLnJ1ggkAojwRD29uNT0wEwYD
+VR0lBAwwCgYIKwYBBQUHAwIwCwYDVR0PBAQDAgeAMA0GCSqGSIb3DQEBBQUAA4GB
+AIXmi9N98K1f+WkDLhXjMIRvX/JFQSEtwXnLaozh6IfJozmr4sbv88PlUrFUyC77
+douTCSU1LRnNdWjtvKuXbW8FF4HoTVbYH0bvMVLYmq6WsmEne9+da7A8+bRaigkn
+APy6G+b8VzNbCXPljN42sHvtrVXxHkH6WRHY5xpPUkfY
+-----END CERTIFICATE-----

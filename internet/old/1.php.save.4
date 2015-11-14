@@ -1,0 +1,379 @@
+<?php
+////////////////////////////////////////////////////
+////						////
+////	ПРАВИЛЬНОЕ ВРЕМЯ НА РОУТЕРЕ!!!!!!	////
+//// 	ДОСТУП К ВЕБ ПРИЛОЖЕНИЮ БЕЗ НАТА 	////
+////	ЧТОБЫ ВИДЕТЬ ВНУТРЕННИЙ АЙПИ		////
+////	НА МАРШРУТИЗАТОРЕ ДОЛЖНО БЫТЬ ЛИЗИНГ 	////
+////	НА СТУКИ И КРОН РЕСТАРУЕТ ДХЦП 2 РАЗА 	////
+////	В ДЕНЬ../etc/init.d/dnsmasq restart	////
+////	В FORWARDe первым должно стотяь какоето	////
+////	ПРАВИЛО Например запрещающее доступ в 	////
+////	локалку 				////
+////////////////////////////////////////////////////
+$routers = array
+	(
+		array('ip'=>'192.168.4.4','range'=>'192.168.241','user'=>'root','pass'=>'356386','type'=>'openwrt'),
+		array('ip'=>'192.168.41.2','range'=>'192.168.93','user'=>'admin','pass'=>'356386','type'=>'mikrotik')
+	);
+//НА СТОРОНЕ СЕРВЕРА
+$addedfiles = "/server/ip/added.txt";
+$iptimes = "/server/time/";
+
+function check_lease($ip,$in1)
+{
+	$ssa = strrpos($in1,$ip);
+	return $ssa;
+}
+
+function search_mac($ssa,$in1)
+{
+	$MAC = substr($in1,$ssa-18,17);
+	return $MAC;
+}
+
+function put_mac($ip,$MAC)
+{
+echo $MAC;
+$in2 = array("echo \"config host\" >> /etc/config/dhcp", "echo \"option mac '".$MAC."'\" >> /etc/config/dhcp","echo \"option ip '".$ip."'\" >> /etc/config/dhcp");
+	return $in2;
+}
+function del_mac($ip,$in7,$type)
+{
+	if($type == "openwrt")
+	{
+		$datt = "/config host\n(.*)\n(.*)$ip(\')\n/";
+		$ss = preg_replace($datt,"",$in7);
+                $ss = mb_substr($ss,0,-1);
+		$ss = "echo \"".$ss."\" > ./etc/config/dhcp";
+		return $ss;
+	}
+}
+
+
+//config host
+//option mac 'e4:f3:43:8f:8e:60'
+//option ip '192.168.241.55'
+
+
+
+function put_iptables($ip,$exp)
+{
+$show = date("Y-m-d\TH:i:s",$exp);
+$iptable = "iptables -I FORWARD 2 -i tap0 --source $ip -m time --kerneltz --datestop $show -j ACCEPT";
+return "echo \"".$iptable."\" >> /etc/firewall.user";
+}
+
+function del_iptables($ip,$exp,$in3,$type)
+{
+	if($type == "openwrt")
+	{
+		$show1 = date("Y-m-d\TH:i:s", $exp);
+		$inn = "iptables -I FORWARD 2 -i tap0 --source $ip -m time --kerneltz --datestop $show1 -j ACCEPT\n";
+		$inn = str_replace($inn,"",$in3);
+		return "echo \"".$inn."\" > /etc/firewall.user";
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$s = scandir($iptimes);
+$ss = count($s);
+for ($i = 2; $i<$ss; $i++)
+{
+$a = $s[$i];
+$b = file_get_contents($iptimes.$s[$i]);
+$b = substr($b,0,-1);
+$sss[$a] = $b;
+}
+
+if ($ss == 2)
+{return;}
+$added = unserialize(file_get_contents($addedfiles));
+$time = time();
+
+
+foreach ($sss as $ip => $exp_time)
+{
+$aag = strrpos($ip,".");
+$fft = substr($ip,0,$aag);
+	foreach($routers as $ids=> $route)
+	{
+		if ($fft == $route['range'])
+		{
+			$ids1 =$ids;
+		}
+	}
+
+
+$rrr = $routers[$ids1];
+if($rrr['type']=="openwrt")
+{
+$cmd1 = "cat /var/dhcp.leases";
+$cmd2 = "cat /etc/firewall.user";
+$cmd3 = "cat /etc/config/dhcp";
+}
+
+/*
+	if ($exp_time > $time)//если время пока еще не вышло
+	{
+		if(empty($added) == false && is_array($added) == true)//МАССИВ ИЛИ НЕ МАССИВ BИЛИ ПУСТОЙ МАССИВ???
+		{
+			if (FALSE == array_key_exists($ip,$added))//если в списке добавленных нету сохраняю в файл.
+			{
+
+				a:
+				$conn = ssh2_connect($rrr['ip'], 22);
+				if (ssh2_auth_password($conn,$rrr['user'],$rrr['pass'])==true)
+				{
+					echo "Соединеие успешное\n";
+				}
+				else
+				{
+					echo "соединение пропало\n";
+					continue; //ЕСЛИ СВЯЗИ НЕТУ ПРОПУСТИТЬ!!!!!!!!!
+				}
+				$stream = ssh2_exec($conn, $cmd1);
+				$errorStream = ssh2_fetch_stream($stream, SSH2_STREAM_STDERR);
+				stream_set_blocking($errorStream, true);
+				stream_set_blocking($stream, true);
+				$in1 = stream_get_contents($stream);
+				$ssa = check_lease($ip,$in1);
+				if ($ssa == FALSE)// если мак не найден игнорить
+				{
+					echo "ВНИМАНИЕ МАК АДРЕСС НЕ НАЙДЕН!!! на ".$ip."\n";
+				}
+				else
+				{
+				$MAC = search_mac($ssa,$in1);
+				$mac_put = put_mac($ip,$MAC);
+					foreach($mac_put as $put)
+						{
+                                		$stream = ssh2_exec($conn,$put);
+						}
+				$iptable = put_iptables($ip,$exp_time);
+				ssh2_exec($conn,$iptable);
+
+                                if($rrr['type']=="openwrt")//ЕСЛИ ЭТО ОПЕНВРТ НАДО РЕСТАРТОВАТЬ FW
+                                {
+                                        $stream = ssh2_exec($conn,"/etc/init.d/firewall restart");
+					$errorStream = ssh2_fetch_stream($stream, SSH2_STREAM_STDERR);
+					stream_set_blocking($errorStream, true);
+					stream_set_blocking($stream, true);
+					stream_get_contents($stream);
+					stream_get_contents($errorStream);
+                                }
+
+				$added2[$ip] = $exp_time;
+				fclose($errorStream);
+				fclose($stream);
+				}
+
+			}
+			else//если в списке добавленных есть
+			{
+				echo "Время еще не вышло в списке добавленных УЖЕ ЕСТЬ ".$ip."\n";
+					if ($exp_time == $added[$ip])
+					{
+						echo "время НЕ меняли ".$ip." было ".$added[$ip]." стало ".$exp_time."\n";
+					}
+					else
+					{
+                                		$conn = ssh2_connect($rrr['ip'], 22);
+                		                if (ssh2_auth_password($conn,$rrr['user'],$rrr['pass'])==true)
+		                                {
+                                        		echo "Соединеие успешное\n";
+                                		}
+                		                else
+		                                {
+                        		                echo "соединение пропало\n";
+                	                	        continue; //ЕСЛИ СВЯЗИ НЕТУ ПРОПУСТИТЬ!!!!!!!!!
+		                                }
+
+						echo "время МЕНЯЛИ ".$ip." было ".$added[$ip]." стало ".$exp_time."\n";
+						$added2[$ip] = $exp_time;
+                                        	$stream = ssh2_exec($conn,$cmd2);
+                                        	$errorStream = ssh2_fetch_stream($stream, SSH2_STREAM_STDERR);
+                                        	stream_set_blocking($errorStream, true);
+                                        	stream_set_blocking($stream, true);
+                                        	$in3 = stream_get_contents($stream);
+                                        	stream_get_contents($errorStream);
+						$in4 = del_iptables($ip,$added[$ip],$in3,$rrr['type']);
+						ssh2_exec($conn,$in4);
+		                                $iptable = put_iptables($ip,$exp_time);
+                               			ssh2_exec($conn,$iptable);
+		                                if($rrr['type']=="openwrt")//ЕСЛИ ЭТО ОПЕНВРТ НАДО РЕСТАРТОВАТЬ FW
+                		                {
+                                		        $stream = ssh2_exec($conn,"/etc/init.d/firewall restart");
+		                                        $errorStream = ssh2_fetch_stream($stream, SSH2_STREAM_STDERR);
+		                                        stream_set_blocking($errorStream, true);
+		                                        stream_set_blocking($stream, true);
+		                                        stream_get_contents($stream);
+		                                        stream_get_contents($errorStream);
+                		                }
+		                                fclose($errorStream);
+		                                fclose($stream);
+					}
+			}
+		}
+		else//Создаем новый файл
+		{
+			goto a;
+		}
+	}
+	else //если время уже вышло удалить все нахрен... из списка и сам файл тоже.
+	{
+*/
+		$conn = ssh2_connect($rrr['ip'], 22);
+		if (ssh2_auth_password($conn,$rrr['user'],$rrr['pass'])==true)
+		{
+			echo "Соединеие успешное\n";
+		}
+		else
+		{
+			echo "соединение пропало\n";
+			continue; //ЕСЛИ СВЯЗИ НЕТУ ПРОПУСТИТЬ!!!!!!!!!
+		}
+		echo "время уже вышло удаляю файл и из списка добавленных ".$ip."\n";
+		unlink($iptimes.$ip);
+		$stream = ssh2_exec($conn,$cmd2);
+		stream_set_blocking($stream, true);
+		$in3 = stream_get_contents($stream);
+		$in5 = del_iptables($ip,$added[$ip],$in3,$rrr['type']);
+                $in6 = del_iptables($ip,$exp_time,$in3,$rrr['type']);
+		ssh2_exec($conn,$in5);
+		ssh2_exec($conn,$in6);
+		if($rrr['type']=="openwrt")//ЕСЛИ ЭТО ОПЕНВРТ НАДО РЕСТАРТОВАТЬ FW
+		{
+			$stream = ssh2_exec($conn,"/etc/init.d/firewall restart");
+			$errorStream = ssh2_fetch_stream($stream, SSH2_STREAM_STDERR);
+			stream_set_blocking($errorStream, true);
+			stream_set_blocking($stream, true);
+			stream_get_contents($stream);
+			stream_get_contents($errorStream);
+		}
+
+		$stream = ssh2_exec($conn,$cmd3);
+		stream_set_blocking($stream, true);
+		$in7 = stream_get_contents($stream);
+		$out = del_mac($ip,$in7,$rrr['type']);
+		echo $out;
+		$stream = ssh2_exec($conn,$out);
+		ssh2_exec($conn,"
+
+141236789012345678901234567890sasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+asdasdasdasdasdasdasdasd
+asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasda
+sdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasda
+sdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdas
+dasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasd
+asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdas
+dasdasdasdasdasdasdasdasdasdasdasdasd
+asdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdas
+dasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdas
+dasdasdasdasdasdasdasdas
+dasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasdasda
+sdasdasdasdasdasdasdasdasdasdasda");
+
+
+                $ipdell[$ip] = $exp_time;
+		fclose($errorStream);
+		fclose($stream);
+
+/*
+	}
+*/
+}
+
+
+
+if (empty($added2) == FALSE)
+{
+	echo "Добавляемая переменная существует\n";
+	if (is_array($added2) == TRUE)
+	{
+		echo "Добавляемая переменная массив\n";
+		if (empty($added) == TRUE)
+		{
+			if (empty($ipdell)==false)
+			{
+				echo "Сохраненная переменная пустая, протсо добавляю, переменная удаления сущестует\n";
+				file_put_contents($addedfiles,serialize(array_diff_key($added2,$ipdell)));
+			}
+			else
+			{
+				echo "Сохраненная переменная пустая, протсо добавляю\n";
+				file_put_contents($addedfiles,serialize($added2));
+			}
+		}
+		else
+		{
+			echo "Сохраненная переменная не пустая\n";
+			if (is_array($added) == TRUE)
+			{
+				if (empty($ipdell)==false)
+	                        {
+					echo "Сохраненная переменная массив, добавляю новые элементы, перемнная удалния существует\n";
+					$merg = array_merge($added,$added2);
+					$differ = array_diff_key($merg,$ipdell);
+					file_put_contents($addedfiles,serialize($differ));
+				}
+				else
+				{
+					echo "Сохраненная переменная массив, добавляю новые элементы\n";
+					file_put_contents($addedfiles,serialize(array_merge($added,$added2)));
+				}
+			}
+			else
+			{
+				echo "ошибка из сохраненного файла $addedfiles идет перменная НЕ МАССИВ!!!!!! ничего не добавлено\n";
+			}
+		}
+	}
+	else
+	{
+		echo "ОШИБКА!!! добавляемая переменаня не массив\n";
+	}
+
+}
+else
+{
+	echo "ничего добавлять не буду добавляемая переменная пустая\n";
+	if (empty($ipdell)==false)
+	{
+		echo "перемнная удалния существует\n";
+		//print_r($ipdell);
+		//print_r($added);
+		$aaa = array_diff_key($added,$ipdell);
+		//print_r($aaa);
+		file_put_contents($addedfiles,serialize($aaa));
+
+
+	}
+	else
+	{
+		echo "перемнная удалния отсутвует\n";
+	}
+
+}
+
+
+
+
+
+?>

@@ -1,0 +1,16 @@
+<?php
+$inputJSON = file_get_contents('php://input');
+$input= json_decode($inputJSON, TRUE ); //convert JSON into array
+if($input[id]==reg)
+{
+	if($input[action]==put)
+	{
+		//Можно регать
+		//echo "ok";
+		//echo json_encode($input);
+		echo json_encode(post.get().toString());
+	}
+}
+
+
+?>
